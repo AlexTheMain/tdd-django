@@ -61,6 +61,7 @@ class NewVisitorTest(unittest.TestCase):
         rows = table.find_elements(By.TAG_NAME, 'tr')
 
         self.assertTrue(any(row.text == '1: Купить павлиньи перья' for row in rows),
+                        f"Новый элемент списка не появился в таблице. Содержимым было: \n {table.text}")
         self.assertTrue(any(row.text == '2: Сделать мушку из павлиньих перьев' for row in rows),
                         f"Новый элемент списка не появился в таблице. Содержимым было: \n {table.text}")
 
