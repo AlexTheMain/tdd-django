@@ -4,13 +4,14 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
 import time
 import unittest
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 MAX_WAIT = 10
 
 
-class NewVisitorTest(LiveServerTestCase):
+class NewVisitorTest(StaticLiveServerTestCase):
     '''тест нового посетителя'''
+
     def setUp(self):
         '''установка'''
         self.browser = webdriver.Firefox()
@@ -24,12 +25,12 @@ class NewVisitorTest(LiveServerTestCase):
         start_time = time.time()
         while True:
             try:
-                table = self.browser.find_element(By.ID,'id_list_table')
-                rows = table.find_elements(By.TAG_NAME,'tr')
+                table = self.browser.find_element(By.ID, 'id_list_table')
+                rows = table.find_elements(By.TAG_NAME, 'tr')
                 self.assertIn(row_text, [row.text for row in rows])
                 return
             except(AssertionError, WebDriverException) as e:
-                if time.time() - start_time> MAX_WAIT:
+                if time.time() - start_time > MAX_WAIT:
                     raise e
                 time.sleep(0.5)
 
@@ -68,7 +69,6 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox.send_keys(Keys.ENTER)
         time.sleep(1)
 
-
         # Страница снова обновляется, и теперь показывает оба элемента ее списка
         self.wait_for_row_in_list_table('1: Купить павлиньи перья')
         self.wait_for_row_in_list_table('2: Сделать мушку из павлиньих перьев')
@@ -81,12 +81,11 @@ class NewVisitorTest(LiveServerTestCase):
 
         # Удовлетворенная, она снова ложится спать
 
-
     def test_multiple_users_can_start_lists_at_different_urls(self):
         '''тест: многочисленные пользователи могут начать списки по разным url'''
         # Эдит начинает новый список
         self.browser.get(self.live_server_url)
-        inputbox=self.browser.find_element(By.ID,'id_new_item')
+        inputbox = self.browser.find_element(By.ID, 'id_new_item')
         inputbox.send_keys('Купить павлиньи перья')
         inputbox.send_keys(Keys.ENTER)
         self.wait_for_row_in_list_table('1: Купить павлиньи перья')
@@ -122,6 +121,28 @@ class NewVisitorTest(LiveServerTestCase):
         page_text = self.browser.find_element(By.TAG_NAME, 'body').text
         self.assertNotIn('Купить павлиньи перья', page_text)
         self.assertIn('Купить молоко', page_text)
+
+    def test_layout_and_styling(self):
+        '''тест макета и стилевого оформления'''
+        # Эдит открывает домашнюю страницу
+        self.browser.get(self.live_server_url)
+        self.browser.set_window_size(1024, 768)
+
+        # Она замечает, что поле ввода аккуратно центрировано
+        inputbox = self.browser.find_element(By.ID,'id_new_item')
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2, 512,
+            delta=10
+        )
+        # Она начинает новый список и видит, что поле ввода там тоже # аккуратно центировано
+        inputbox.send_keys('testing')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: testing')
+        inputbox = self.browser.find_element(By.ID, 'id_new_item')
+        self.assertAlmostEqual(
+            inputbox.location['x'] + inputbox.size['width'] / 2, 512,
+            delta=10
+        )
 
 
 if __name__ == '__main__':
