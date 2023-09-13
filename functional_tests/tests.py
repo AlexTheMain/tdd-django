@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import WebDriverException
 import time
 import unittest
+import os
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 MAX_WAIT = 10
@@ -15,6 +16,9 @@ class NewVisitorTest(StaticLiveServerTestCase):
     def setUp(self):
         '''установка'''
         self.browser = webdriver.Firefox()
+        staging_server = os.environ.get('STAGING_SERVER')
+        if staging_server:
+            self.live_server_url = 'http://'+staging_server
 
     def tearDown(self):
         '''демонтаж'''
@@ -57,7 +61,6 @@ class NewVisitorTest(StaticLiveServerTestCase):
         # Когда она нажимает enter, страница обновляется, и теперь страница
         # содержит "1: Купить павлиньи перья" в качестве элемента списка
         inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
 
         self.wait_for_row_in_list_table('1: Купить павлиньи перья')
 
@@ -67,7 +70,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         inputbox = self.browser.find_element(By.ID, 'id_new_item')
         inputbox.send_keys('Сделать мушку из павлиньих перьев')
         inputbox.send_keys(Keys.ENTER)
-        time.sleep(1)
+
 
         # Страница снова обновляется, и теперь показывает оба элемента ее списка
         self.wait_for_row_in_list_table('1: Купить павлиньи перья')
